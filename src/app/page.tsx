@@ -1,12 +1,57 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, ArrowLeft, Copy, Download, Eye } from "lucide-react";
+import { skillCategories, skillIcons, type Skill } from "@/data/skills";
+
+// Memoized skill item component for better performance
+const SkillItem = memo(
+  ({
+    skill,
+    isSelected,
+    onToggle,
+  }: {
+    skill: Skill;
+    isSelected: boolean;
+    onToggle: (skillKey: string) => void;
+  }) => {
+    const iconUrl = skillIcons[skill.key as keyof typeof skillIcons];
+
+    return (
+      <div className="flex items-center gap-3">
+        <Checkbox
+          id={skill.key}
+          checked={isSelected}
+          onCheckedChange={() => onToggle(skill.key)}
+          className="w-4 h-4"
+        />
+        <div
+          className="relative group cursor-pointer"
+          onClick={() => onToggle(skill.key)}
+        >
+          <img
+            src={iconUrl || "/placeholder.svg"}
+            alt={skill.name}
+            className="w-12 h-12 object-contain hover:scale-125 transition-transform duration-300"
+            loading="lazy"
+            title={skill.name}
+          />
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+            {skill.name}
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+
+SkillItem.displayName = "SkillItem";
 
 export default function GitHubReadmeGenerator() {
   const [currentStep, setCurrentStep] = useState("form");
@@ -83,23 +128,24 @@ export default function GitHubReadmeGenerator() {
   const [searchTerm, setSearchTerm] = useState("");
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = useCallback((field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleWorkLabelChange = (field: string, value: string) => {
+  const handleWorkLabelChange = useCallback((field: string, value: string) => {
     setWorkLabels((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleSkillToggle = useCallback((skill: string) => {
+  const handleSkillToggle = useCallback((skillKey: string) => {
     setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+      prev.includes(skillKey)
+        ? prev.filter((s) => s !== skillKey)
+        : [...prev, skillKey]
     );
   }, []);
 
   const handleAddonToggle = useCallback(
     (addon: string) => {
-      // Check if addon requires social links
       const socialRequiredAddons = [
         "display twitter badge",
         "display latest dev.to blogs dynamically (GitHub Action)",
@@ -135,29 +181,17 @@ export default function GitHubReadmeGenerator() {
     [socialLinks.twitter, socialLinks.devto, socialLinks.medium]
   );
 
-  const handleSocialChange = (platform: string, value: string) => {
+  const handleSocialChange = useCallback((platform: string, value: string) => {
     setSocialLinks((prev) => ({ ...prev, [platform]: value }));
-    // Clear related addon errors when social link is filled
     setAddonErrors((prev) => prev.filter((error) => !error.includes(platform)));
-  };
+  }, []);
 
-  const handleTweetClick = () => {
-    const tweetText =
-      "Wow! You should use this README generator! It's amazing for creating GitHub profiles.";
-    const url = "yasirkhan.xyz";
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      tweetText
-    )}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, "_blank");
-  };
-
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(generatedMarkdown);
       alert("Markdown copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy: ", err);
-      // Fallback for older browsers
       const textArea = document.createElement("textarea");
       textArea.value = generatedMarkdown;
       document.body.appendChild(textArea);
@@ -166,9 +200,9 @@ export default function GitHubReadmeGenerator() {
       document.body.removeChild(textArea);
       alert("Markdown copied to clipboard!");
     }
-  };
+  }, [generatedMarkdown]);
 
-  const downloadMarkdown = () => {
+  const downloadMarkdown = useCallback(() => {
     const element = document.createElement("a");
     const file = new Blob([generatedMarkdown], { type: "text/markdown" });
     element.href = URL.createObjectURL(file);
@@ -176,9 +210,9 @@ export default function GitHubReadmeGenerator() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-  };
+  }, [generatedMarkdown]);
 
-  const generateMarkdown = () => {
+  const generateMarkdown = useCallback(() => {
     let markdown = `<h1 align="center">Hi 👋, I'm ${formData.name}</h1>\n`;
     markdown += `<h3 align="center">${formData.subtitle}</h3>\n\n`;
 
@@ -234,195 +268,36 @@ export default function GitHubReadmeGenerator() {
     // Add skills
     if (selectedSkills.length > 0) {
       markdown += `<h3 align="left">Languages and Tools:</h3>\n<p align="left">`;
-      selectedSkills.forEach((skill) => {
-        markdown += ` <a href="#" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/${skill.toLowerCase()}/${skill.toLowerCase()}-original.svg" alt="${skill}" width="40" height="40"/> </a>`;
+      selectedSkills.forEach((skillKey) => {
+        const iconUrl = skillIcons[skillKey as keyof typeof skillIcons];
+        if (iconUrl) {
+          markdown += ` <a href="#" target="_blank" rel="noreferrer"> <img src="${iconUrl}" alt="${skillKey}" width="40" height="40"/> </a>`;
+        }
       });
       markdown += `</p>\n\n`;
     }
 
     setGeneratedMarkdown(markdown);
     setCurrentStep("output");
-  };
+  }, [formData, workLabels, socialLinks, selectedSkills]);
 
-  const programmingLanguages = [
-    { name: "C", icon: "🔵" },
-    { name: "C++", icon: "🔵" },
-    { name: "C#", icon: "🟣" },
-    { name: "Go", icon: "🔵" },
-    { name: "Java", icon: "☕" },
-    { name: "JavaScript", icon: "🟨" },
-    { name: "TypeScript", icon: "🔷" },
-    { name: "PHP", icon: "🟣" },
-    { name: "Swift", icon: "🔶" },
-    { name: "Objective-C", icon: "⚫" },
-    { name: "Scala", icon: "🔴" },
-    { name: "Python", icon: "🐍" },
-    { name: "Haxe", icon: "🟠" },
-    { name: "CoffeeScript", icon: "🟤" },
-    { name: "Elixir", icon: "🟣" },
-    { name: "Erlang", icon: "🔴" },
-    { name: "Clojure", icon: "🟢" },
-    { name: "Rust", icon: "🦀" },
-  ];
+  // Memoized filtered skills for search performance
+  const filteredSkillCategories = useMemo(() => {
+    if (!searchTerm) return skillCategories;
 
-  const frontendDev = [
-    { name: "Vue.js", icon: "🟢" },
-    { name: "React", icon: "⚛️" },
-    { name: "Svelte", icon: "🔶" },
-    { name: "Angular", icon: "🔴" },
-    { name: "CSS3", icon: "🔷" },
-    { name: "HTML5", icon: "🟠" },
-    { name: "Pug", icon: "🟤" },
-    { name: "Sass", icon: "🌸" },
-    { name: "Tailwind", icon: "🔷" },
-    { name: "Material-UI", icon: "🔷" },
-    { name: "Bootstrap", icon: "🟣" },
-    { name: "Vuetify", icon: "🔷" },
-    { name: "Quasar", icon: "🔷" },
-    { name: "Bulma", icon: "🟢" },
-    { name: "Semantic UI", icon: "🟢" },
-    { name: "Webpack", icon: "🔷" },
-    { name: "Babel", icon: "🟨" },
-    { name: "Gulp", icon: "🔴" },
-  ];
+    const filtered: typeof skillCategories = {} as typeof skillCategories;
 
-  const backendDev = [
-    { name: "Node.js", icon: "🟢" },
-    { name: "Spring", icon: "🟢" },
-    { name: "Express", icon: "⚫" },
-    { name: "GraphQL", icon: "🌸" },
-    { name: "Kafka", icon: "⚫" },
-    { name: "Solr", icon: "🟠" },
-    { name: "Nginx", icon: "🟢" },
-    { name: "Apache", icon: "🔴" },
-    { name: "Jenkins", icon: "🔵" },
-    { name: "NestJS", icon: "🔴" },
-  ];
+    Object.entries(skillCategories).forEach(([categoryKey, skills]) => {
+      const filteredSkills = skills.filter((skill) =>
+        skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (filteredSkills.length > 0) {
+        filtered[categoryKey as keyof typeof skillCategories] = filteredSkills;
+      }
+    });
 
-  const mobileAppDev = [
-    { name: "Android", icon: "🟢" },
-    { name: "Flutter", icon: "🔷" },
-    { name: "Dart", icon: "🔷" },
-    { name: "Kotlin", icon: "🟣" },
-    { name: "NativeScript", icon: "🔵" },
-    { name: "Xamarin", icon: "🔷" },
-    { name: "React Native", icon: "⚛️" },
-    { name: "Ionic", icon: "🔷" },
-    { name: "Appcelerator", icon: "🔴" },
-  ];
-
-  const aiMl = [
-    { name: "TensorFlow", icon: "🟠" },
-    { name: "PyTorch", icon: "🔥" },
-    { name: "Pandas", icon: "🐼" },
-    { name: "Scikit-learn", icon: "🟠" },
-    { name: "OpenCV", icon: "🔵" },
-  ];
-
-  const database = [
-    { name: "MongoDB", icon: "🟢" },
-    { name: "MySQL", icon: "🔷" },
-    { name: "PostgreSQL", icon: "🔷" },
-    { name: "Redis", icon: "🔴" },
-    { name: "Oracle", icon: "🔴" },
-    { name: "Cassandra", icon: "🟡" },
-    { name: "CouchDB", icon: "🔴" },
-    { name: "Hive", icon: "🟡" },
-    { name: "Realm", icon: "🟣" },
-    { name: "SQLite", icon: "🔷" },
-    { name: "MS SQL", icon: "🔴" },
-    { name: "Elasticsearch", icon: "🟡" },
-  ];
-
-  const devops = [
-    { name: "AWS", icon: "🟠" },
-    { name: "Docker", icon: "🔷" },
-    { name: "Jenkins", icon: "⚫" },
-    { name: "GCP", icon: "🔵" },
-    { name: "Kubernetes", icon: "🔷" },
-    { name: "Bash", icon: "⚫" },
-    { name: "Azure", icon: "🔷" },
-    { name: "Vagrant", icon: "🔷" },
-    { name: "CircleCI", icon: "⚫" },
-    { name: "TravisCI", icon: "🟡" },
-  ];
-
-  const dataVisualization = [
-    { name: "D3.js", icon: "🟠" },
-    { name: "Chart.js", icon: "🌸" },
-    { name: "Canva", icon: "🔷" },
-    { name: "Kibana", icon: "🔷" },
-    { name: "Grafana", icon: "🟠" },
-  ];
-
-  const baas = [
-    { name: "Firebase", icon: "🟡" },
-    { name: "Amplify", icon: "🟠" },
-    { name: "Appwrite", icon: "🌸" },
-    { name: "Heroku", icon: "🟣" },
-  ];
-
-  const framework = [
-    { name: "Django", icon: "🟢" },
-    { name: ".NET", icon: "🟣" },
-    { name: "Laravel", icon: "🔴" },
-    { name: "Symfony", icon: "⚫" },
-    { name: "CodeIgniter", icon: "🔥" },
-    { name: "Rails", icon: "🔴" },
-    { name: "Flask", icon: "⚫" },
-    { name: "Electron", icon: "🔷" },
-  ];
-
-  const testing = [
-    { name: "Cypress", icon: "⚫" },
-    { name: "Selenium", icon: "🟢" },
-    { name: "Jest", icon: "🔴" },
-    { name: "Mocha", icon: "🟤" },
-    { name: "Puppeteer", icon: "🟢" },
-    { name: "Karma", icon: "🟢" },
-    { name: "Jasmine", icon: "🟣" },
-  ];
-
-  const software = [
-    { name: "Illustrator", icon: "🟠" },
-    { name: "Photoshop", icon: "🔷" },
-    { name: "XD", icon: "🌸" },
-    { name: "Figma", icon: "🎨" },
-    { name: "Blender", icon: "🟠" },
-    { name: "Sketch", icon: "🟡" },
-    { name: "InVision", icon: "🌸" },
-    { name: "Framer", icon: "🔷" },
-  ];
-
-  const staticSiteGenerators = [
-    { name: "Gatsby", icon: "🟣" },
-    { name: "GridSome", icon: "🟢" },
-    { name: "Hugo", icon: "🌸" },
-    { name: "Jekyll", icon: "🔴" },
-    { name: "Next.js", icon: "⚫" },
-    { name: "Nuxt", icon: "🟢" },
-    { name: "11ty", icon: "⚫" },
-    { name: "Scully", icon: "🔴" },
-    { name: "Sapper", icon: "🔥" },
-    { name: "VuePress", icon: "🟢" },
-    { name: "Hexo", icon: "🔷" },
-  ];
-
-  const gameEngines = [
-    { name: "Unity", icon: "⚫" },
-    { name: "Unreal Engine", icon: "⚫" },
-  ];
-
-  const automation = [
-    { name: "Zapier", icon: "🟠" },
-    { name: "IFTTT", icon: "🔷" },
-  ];
-
-  const other = [
-    { name: "Linux", icon: "🐧" },
-    { name: "Git", icon: "🔶" },
-    { name: "Arduino", icon: "🔷" },
-  ];
+    return filtered;
+  }, [searchTerm]);
 
   const addons = [
     "display visitors count badge 👁️",
@@ -436,38 +311,27 @@ export default function GitHubReadmeGenerator() {
     "display latest blogs from your personal blog dynamically (GitHub Action)",
   ];
 
-  const SkillSection = ({
-    title,
-    skills,
-  }: {
-    title: string;
-    skills: Array<{ name: string; icon: string }>;
-  }) => (
-    <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-300 pb-3">
-        {title}
-      </h3>
-      <div className="grid grid-cols-4 gap-6">
-        {skills.map((skill) => (
-          <div key={skill.name} className="flex items-center space-x-3">
-            <Checkbox
-              id={skill.name}
-              checked={selectedSkills.includes(skill.name)}
-              onCheckedChange={() => handleSkillToggle(skill.name)}
-              className="w-5 h-5"
+  const SkillSection = memo(
+    ({ title, skills }: { title: string; skills: Skill[] }) => (
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-300 pb-3">
+          {title}
+        </h3>
+        <div className="grid grid-cols-4 gap-8">
+          {skills.map((skill) => (
+            <SkillItem
+              key={skill.key}
+              skill={skill}
+              isSelected={selectedSkills.includes(skill.key)}
+              onToggle={handleSkillToggle}
             />
-            <span className="text-3xl">{skill.icon}</span>
-            <Label
-              htmlFor={skill.name}
-              className="text-base cursor-pointer font-medium"
-            >
-              {skill.name}
-            </Label>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    )
   );
+
+  SkillSection.displayName = "SkillSection";
 
   const socialPlatforms = [
     {
@@ -616,7 +480,6 @@ export default function GitHubReadmeGenerator() {
       <div className="min-h-screen bg-white">
         <div className="container mx-auto p-6 max-w-full">
           <div className="bg-white border rounded-lg shadow-sm">
-            {/* Action Buttons */}
             <div className="flex gap-3 p-6 border-b bg-gray-50">
               <Button
                 variant="outline"
@@ -658,7 +521,6 @@ export default function GitHubReadmeGenerator() {
               </Button>
             </div>
 
-            {/* Generated Markdown */}
             <div className="p-6">
               <Textarea
                 value={generatedMarkdown}
@@ -674,13 +536,29 @@ export default function GitHubReadmeGenerator() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-10 max-w-full">
+      <div
+        className="container mx-auto px-4 py-10"
+        style={{ marginLeft: "100px", maxWidth: "calc(100% - 100px)" }}
+      >
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="text-base text-gray-500 mb-3">mvG</div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            GitHub Profile README Generator
+          <h1 className="text-6xl font-bold mb-6">
+            <span className="text-blue-500" style={{ fontFamily: "serif" }}>
+              Awesome
+            </span>{" "}
+            <span className="text-gray-900" style={{ fontFamily: "serif" }}>
+              GitHub Profile
+            </span>
+            <br />
+            <span className="text-gray-900" style={{ fontFamily: "serif" }}>
+              Readme Generator
+            </span>
           </h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Create awesome GitHub profiles with GitHub Profile Readme Generator.
+            Showcase your skills and projects easily with GitHub Profile Readme
+            Generator.
+          </p>
         </div>
 
         <div className="space-y-12">
@@ -940,34 +818,38 @@ export default function GitHubReadmeGenerator() {
               </div>
             </div>
             <div className="space-y-10">
-              <SkillSection
-                title="Programming Languages"
-                skills={programmingLanguages}
-              />
-              <SkillSection title="Frontend Development" skills={frontendDev} />
-              <SkillSection title="Backend Development" skills={backendDev} />
-              <SkillSection
-                title="Mobile App Development"
-                skills={mobileAppDev}
-              />
-              <SkillSection title="AI/ML" skills={aiMl} />
-              <SkillSection title="Database" skills={database} />
-              <SkillSection
-                title="Data Visualization"
-                skills={dataVisualization}
-              />
-              <SkillSection title="DevOps" skills={devops} />
-              <SkillSection title="Backend as a Service(BaaS)" skills={baas} />
-              <SkillSection title="Framework" skills={framework} />
-              <SkillSection title="Testing" skills={testing} />
-              <SkillSection title="Software" skills={software} />
-              <SkillSection
-                title="Static Site Generators"
-                skills={staticSiteGenerators}
-              />
-              <SkillSection title="Game Engines" skills={gameEngines} />
-              <SkillSection title="Automation" skills={automation} />
-              <SkillSection title="Other" skills={other} />
+              {Object.entries(filteredSkillCategories).map(
+                ([categoryKey, skills]) => {
+                  const categoryTitles: Record<string, string> = {
+                    programmingLanguages: "Programming Languages",
+                    frontendDev: "Frontend Development",
+                    backendDev: "Backend Development",
+                    mobileAppDev: "Mobile App Development",
+                    aiMl: "AI/ML",
+                    database: "Database",
+                    devops: "DevOps",
+                    dataVisualization: "Data Visualization",
+                    baas: "Backend as a Service (BaaS)",
+                    framework: "Framework",
+                    testing: "Testing",
+                    software: "Software",
+                    staticSiteGenerators: "Static Site Generators",
+                    gameEngines: "Game Engines",
+                    automation: "Automation",
+                    blockchain: "Blockchain",
+                    dataAnalysis: "Data Analysis",
+                    other: "Other",
+                  };
+
+                  return (
+                    <SkillSection
+                      key={categoryKey}
+                      title={categoryTitles[categoryKey] || categoryKey}
+                      skills={skills}
+                    />
+                  );
+                }
+              )}
             </div>
           </div>
 
@@ -978,7 +860,7 @@ export default function GitHubReadmeGenerator() {
               <div className="space-y-6">
                 {socialPlatforms.slice(0, 12).map((platform) => (
                   <div key={platform.key} className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
                       <span className="text-lg">{platform.icon}</span>
                     </div>
                     <Input
@@ -998,7 +880,7 @@ export default function GitHubReadmeGenerator() {
               <div className="space-y-6">
                 {socialPlatforms.slice(12).map((platform) => (
                   <div key={platform.key} className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
                       <span className="text-lg">{platform.icon}</span>
                     </div>
                     <Input
@@ -1009,7 +891,7 @@ export default function GitHubReadmeGenerator() {
                       onChange={(e) =>
                         handleSocialChange(platform.key, e.target.value)
                       }
-                      className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0"
+                      className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                     />
                   </div>
                 ))}
@@ -1058,30 +940,374 @@ export default function GitHubReadmeGenerator() {
             </Button>
           </div>
 
-          {/* Support Section - Redesigned */}
-          <div className="bg-white border-2 border-gray-200 rounded-lg p-8">
-            <div className="text-center">
-              <div className="flex justify-center items-center gap-3 mb-4">
-                <h2 className="text-2xl font-semibold text-gray-800">
-                  Support This Project
+          {/* Show off your skills Section */}
+          <div className="bg-white border rounded-lg p-8">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                  Show off your skills
                 </h2>
-                <span className="text-3xl">🙏</span>
+                <p className="text-lg text-gray-600 mb-2">
+                  Select from over 60 core languages, frameworks, backend
+                  technologies and web
+                </p>
+                <p className="text-lg text-gray-600">3 tech.</p>
               </div>
-              <p className="text-lg text-gray-700 mb-6">
-                Are you using this tool and happy with it to create your GitHub
-                Profile?
-              </p>
-              <p className="text-base text-gray-600 mb-8">
-                Your kind support keeps open-source tools like this free for
-                others.
-              </p>
-              <div className="flex justify-center">
-                <Button
-                  onClick={handleTweetClick}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 text-base font-medium rounded-lg shadow-md"
-                >
-                  🐦 Share on Twitter
-                </Button>
+              <div className="flex-1 flex justify-end">
+                <div className="grid grid-cols-5 gap-4">
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="C Programming"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="HTML5"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="JavaScript"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Tailwind CSS"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="TypeScript"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="PHP"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Vue.js"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="MongoDB"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Figma"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="React"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Angular"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Flutter"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Python"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Babel"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Python"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Kotlin"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Flutter"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Express"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="GitHub"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="GraphQL"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Bootstrap"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Swift"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Kubernetes"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Sass"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Sass"
+                    className="w-12 h-12"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Share your socials Section */}
+          <div className="bg-white border rounded-lg p-8">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 flex justify-start">
+                <div className="grid grid-cols-3 gap-4">
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="GitHub"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Facebook"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Instagram"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Discord"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="YouTube"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Dribbble"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Twitter"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Medium"
+                    className="w-12 h-12"
+                  />
+                  <img
+                    src="/placeholder.svg?height=48&width=48"
+                    alt="Threads"
+                    className="w-12 h-12"
+                  />
+                </div>
+              </div>
+              <div className="flex-1 text-right">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                  Share your socials
+                </h2>
+                <p className="text-lg text-gray-600">
+                  Add links to all of your social profiles and blogs in seconds.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Add some stats Section */}
+          <div className="bg-white border rounded-lg p-8">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                  Add some stats
+                </h2>
+                <p className="text-lg text-gray-600">
+                  Show visitors some key facts through charts, graphs and
+                  badges.
+                </p>
+              </div>
+              <div className="flex-1 flex justify-end">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-32 h-4 bg-blue-500 rounded"></div>
+                    <div className="w-24 h-4 bg-gray-300 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-4 bg-yellow-500 rounded"></div>
+                    <div className="w-36 h-4 bg-gray-300 rounded"></div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-4 bg-purple-500 rounded"></div>
+                    <div className="w-40 h-4 bg-gray-300 rounded"></div>
+                  </div>
+                  <div className="flex justify-end mt-8">
+                    <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                      230
+                      <br />
+                      DAYS
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Awesome GitHub Profile Readme Generator Section */}
+          <div className="bg-white border rounded-lg p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold text-gray-900 mb-8">
+                Awesome GitHub Profile Readme Generator
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    Fast Profile Generate
+                  </h3>
+                  <p className="text-gray-600">
+                    GitHub Profile Readme Generator is designed to be fast and
+                    easy to use. You don't need to have any coding skills or
+                    experience to use it.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    Showcase Your Projects
+                  </h3>
+                  <p className="text-gray-600">
+                    You can list the names and links of your projects, and
+                    provide a brief description of what they are and what they
+                    do
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    Show Your Tech Stack
+                  </h3>
+                  <p className="text-gray-600">
+                    One of the benefits of using GitHub Profile Readme Generator
+                    is that you can show your tech stack to the world.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    Customize Your Readme
+                  </h3>
+                  <p className="text-gray-600">
+                    You can change the colors, fonts, sizes, styles, layouts,
+                    etc. that reflects your personality and style.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* How to Create Profile Section */}
+          <div className="bg-white border rounded-lg p-8">
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  How to Create Profile Readme Generator
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Creating a GitHub profile readme with GitHub Profile Generator
+                  is very simple and straightforward. You just need to follow
+                  these steps:
+                </p>
+                <ol className="list-decimal list-inside space-y-2 text-gray-600">
+                  <li>Go to the GitHub Profile Generator website.</li>
+                  <li>
+                    Fill out the form with your information. You can use the
+                    placeholders as examples.
+                  </li>
+                  <li>Click on the "Generate Readme" button.</li>
+                  <li>
+                    Preview the generated markdown code and see how it looks
+                    like on your GitHub profile.
+                  </li>
+                  <li>
+                    Copy the code and paste it into your GitHub profile
+                    repository.
+                  </li>
+                  <li>Enjoy your new and improved GitHub profile readme.</li>
+                </ol>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  A Github profile sample code
+                </h2>
+                <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
+                  <p>Hi, I'm Alice 👋</p>
+                  <p>
+                    I'm a web developer and designer who loves creating
+                    beautiful and functional websites. I have a passion for
+                    learning new technologies and exploring new ideas.
+                  </p>
+                  <p>🌍 I'm from Beijing, China</p>
+                  <p>📧 You can reach me at alice@example.com</p>
+                  <p>🔧 I use these technologies:</p>
+                  <ul className="list-disc list-inside ml-4">
+                    <li>HTML</li>
+                    <li>CSS</li>
+                    <li>JavaScript</li>
+                    <li>React</li>
+                    <li>TailwindCSS</li>
+                    <li>Node.js</li>
+                    <li>MongoDB</li>
+                  </ul>
+                  <p>💼 I'm working on these projects:</p>
+                  <ul className="list-disc list-inside ml-4">
+                    <li>
+                      Portfolio - A personal portfolio website to showcase my
+                      skills and projects.
+                    </li>
+                    <li>
+                      Todo App - A simple and elegant todo app with React and
+                      TailwindCSS.
+                    </li>
+                    <li>
+                      Blog - A blog where I share my thoughts and experiences on
+                      web development and design.
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
