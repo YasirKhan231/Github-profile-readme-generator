@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, ArrowLeft, Copy, Download, Eye } from "lucide-react";
 import { skillCategories, skillIcons, type Skill } from "@/data/skills";
+import Navbar from "@/components/navbar";
 
 // Memoized skill item component for better performance
 const SkillItem = memo(
@@ -39,10 +40,9 @@ const SkillItem = memo(
             alt={skill.name}
             className="w-12 h-12 object-contain hover:scale-125 transition-transform duration-300"
             loading="lazy"
-            title={skill.name}
           />
-          {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+          {/* Fixed Tooltip - Only shows one skill name */}
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30">
             {skill.name}
           </div>
         </div>
@@ -535,30 +535,95 @@ export default function GitHubReadmeGenerator() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div
-        className="container mx-auto px-4 py-10"
-        style={{ marginLeft: "100px", maxWidth: "calc(100% - 100px)" }}
-      >
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Animated Background Shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Circles */}
+        <div className="absolute top-20 left-10 w-4 h-4 bg-pink-400 rounded-full opacity-60 animate-float-slow"></div>
+        <div className="absolute top-32 right-20 w-3 h-3 bg-purple-400 rounded-full opacity-50 animate-float-medium"></div>
+        <div className="absolute top-48 left-1/4 w-2 h-2 bg-yellow-400 rounded-full opacity-70 animate-float-fast"></div>
+        <div className="absolute top-64 right-1/3 w-5 h-5 bg-blue-400 rounded-full opacity-40 animate-float-slow"></div>
+        <div className="absolute top-80 left-1/2 w-3 h-3 bg-green-400 rounded-full opacity-60 animate-float-medium"></div>
+        <div className="absolute top-96 right-10 w-4 h-4 bg-red-400 rounded-full opacity-50 animate-float-fast"></div>
+
+        {/* Triangles */}
+        <div className="absolute top-24 right-1/4 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[14px] border-l-transparent border-r-transparent border-b-pink-400 opacity-60 animate-float-medium"></div>
+        <div className="absolute top-40 left-1/3 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent border-b-purple-400 opacity-50 animate-float-slow"></div>
+        <div className="absolute top-56 right-1/2 w-0 h-0 border-l-[10px] border-r-[10px] border-b-[17px] border-l-transparent border-r-transparent border-b-yellow-400 opacity-70 animate-float-fast"></div>
+        <div className="absolute top-72 left-20 w-0 h-0 border-l-[7px] border-r-[7px] border-b-[12px] border-l-transparent border-r-transparent border-b-blue-400 opacity-40 animate-float-medium"></div>
+        <div className="absolute top-88 right-1/5 w-0 h-0 border-l-[5px] border-r-[5px] border-b-[9px] border-l-transparent border-r-transparent border-b-green-400 opacity-60 animate-float-slow"></div>
+      </div>
+
+      <div className="container mx-auto px-8 py-10 max-w-7xl relative z-10">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold mb-6">
-            <span className="text-blue-500" style={{ fontFamily: "serif" }}>
-              Awesome
-            </span>{" "}
-            <span className="text-gray-900" style={{ fontFamily: "serif" }}>
-              GitHub Profile
-            </span>
-            <br />
-            <span className="text-gray-900" style={{ fontFamily: "serif" }}>
-              Readme Generator
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Create awesome GitHub profiles with GitHub Profile Readme Generator.
-            Showcase your skills and projects easily with GitHub Profile Readme
-            Generator.
-          </p>
+        <Navbar />
+        <div className="text-center mb-16 pt-8">
+          <div className="relative inline-block">
+            {/* Main Heading with Premium Styling */}
+            <div className="relative">
+              {/* GitHub - Calligraphy Style */}
+              <div className="mb-4">
+                <h1 className="text-7xl font-bold text-gray-900 dark:text-white relative inline-block">
+                  <span className="font-serif italic bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-2xl tracking-wide transform -rotate-1 inline-block calligraphy-text">
+                    GitHub
+                  </span>
+                  {/* Pen stroke underline effect */}
+                  <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-full">
+                    <svg
+                      viewBox="0 0 200 20"
+                      className="w-full h-4 opacity-80"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10,15 Q50,5 100,12 T190,8"
+                        stroke="url(#gradient)"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeLinecap="round"
+                        className="pen-stroke"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="gradient"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop offset="0%" stopColor="#4f46e5" />
+                          <stop offset="50%" stopColor="#7c3aed" />
+                          <stop offset="100%" stopColor="#ec4899" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </h1>
+              </div>
+
+              {/* Profile README Generator - Italic Serif */}
+              <div className="mt-8">
+                <h2 className="text-5xl font-serif italic text-gray-800 dark:text-gray-200 leading-tight tracking-wide">
+                  <span className="inline-block transform hover:scale-105 transition-transform duration-300">
+                    Profile README
+                  </span>
+                  <br />
+                  <span className="inline-block transform hover:scale-105 transition-transform duration-300 mt-2">
+                    Generator
+                  </span>
+                </h2>
+              </div>
+
+              {/* Subtle glow effects */}
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10 animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-purple-500/5 to-pink-500/5 rounded-2xl blur-2xl -z-10"></div>
+            </div>
+
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto animate-fade-in mt-8 font-light">
+              Create stunning GitHub profiles with our advanced README
+              generator. Showcase your skills and projects with beautiful,
+              professional designs.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-12">
@@ -871,7 +936,7 @@ export default function GitHubReadmeGenerator() {
                       onChange={(e) =>
                         handleSocialChange(platform.key, e.target.value)
                       }
-                      className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0"
+                      className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                     />
                   </div>
                 ))}
