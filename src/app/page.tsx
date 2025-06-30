@@ -130,17 +130,17 @@ export default function GitHubReadmeGenerator() {
 
   // Optimized input handlers with debouncing
   const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const handleWorkLabelChange = useCallback((field: string, value: string) => {
-    setWorkLabels(prev => ({ ...prev, [field]: value }));
+    setWorkLabels((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const handleSkillToggle = useCallback((skillKey: string) => {
-    setSelectedSkills(prev =>
+    setSelectedSkills((prev) =>
       prev.includes(skillKey)
-        ? prev.filter(s => s !== skillKey)
+        ? prev.filter((s) => s !== skillKey)
         : [...prev, skillKey]
     );
   }, []);
@@ -166,16 +166,16 @@ export default function GitHubReadmeGenerator() {
         }
 
         if (hasError) {
-          setAddonErrors(prev => [...prev, addon]);
+          setAddonErrors((prev) => [...prev, addon]);
           return;
         } else {
-          setAddonErrors(prev => prev.filter(error => error !== addon));
+          setAddonErrors((prev) => prev.filter((error) => error !== addon));
         }
       }
 
-      setSelectedAddons(prev =>
+      setSelectedAddons((prev) =>
         prev.includes(addon)
-          ? prev.filter(a => a !== addon)
+          ? prev.filter((a) => a !== addon)
           : [...prev, addon]
       );
     },
@@ -183,8 +183,8 @@ export default function GitHubReadmeGenerator() {
   );
 
   const handleSocialChange = useCallback((platform: string, value: string) => {
-    setSocialLinks(prev => ({ ...prev, [platform]: value }));
-    setAddonErrors(prev => prev.filter(error => !error.includes(platform)));
+    setSocialLinks((prev) => ({ ...prev, [platform]: value }));
+    setAddonErrors((prev) => prev.filter((error) => !error.includes(platform)));
   }, []);
 
   const copyToClipboard = useCallback(async () => {
@@ -338,142 +338,147 @@ export default function GitHubReadmeGenerator() {
     {
       key: "github",
       name: "GitHub",
-      icon: "⚫",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/github.svg",
       placeholder: "github username",
     },
     {
       key: "twitter",
       name: "Twitter",
-      icon: "🐦",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/twitter.svg",
       placeholder: "twitter username",
     },
     {
       key: "devto",
       name: "Dev.to",
-      icon: "📝",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/dev-dot-to.svg",
       placeholder: "dev.to username",
     },
     {
       key: "codepen",
       name: "CodePen",
-      icon: "✏️",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/codepen.svg",
       placeholder: "codepen username",
     },
     {
       key: "codesandbox",
       name: "CodeSandbox",
-      icon: "📦",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/codesandbox.svg",
       placeholder: "codesandbox username",
     },
     {
       key: "stackoverflow",
       name: "Stack Overflow",
-      icon: "📚",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/stackoverflow.svg",
       placeholder: "stackoverflow user ID",
     },
     {
       key: "kaggle",
       name: "Kaggle",
-      icon: "🏆",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/kaggle.svg",
       placeholder: "kaggle username",
     },
     {
       key: "linkedin",
       name: "LinkedIn",
-      icon: "💼",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/linkedin.svg",
       placeholder: "linkedin username",
     },
     {
       key: "facebook",
       name: "Facebook",
-      icon: "📘",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/facebook.svg",
       placeholder: "facebook username",
     },
     {
       key: "instagram",
       name: "Instagram",
-      icon: "📷",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/instagram.svg",
       placeholder: "instagram username",
     },
     {
       key: "dribbble",
       name: "Dribbble",
-      icon: "🎨",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/dribbble.svg",
       placeholder: "dribbble username",
     },
     {
       key: "behance",
       name: "Behance",
-      icon: "🎭",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/behance.svg",
       placeholder: "behance username",
     },
     {
       key: "hashnode",
       name: "Hashnode",
-      icon: "📰",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/hashnode.svg",
       placeholder: "hashnode username (with @)",
     },
     {
       key: "medium",
       name: "Medium",
-      icon: "📖",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/medium.svg",
       placeholder: "medium username (with @)",
     },
     {
       key: "youtube",
       name: "YouTube",
-      icon: "📺",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/youtube.svg",
       placeholder: "youtube channel name",
     },
     {
       key: "codechef",
       name: "CodeChef",
-      icon: "👨‍🍳",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/codechef.svg",
       placeholder: "codechef username",
     },
     {
       key: "hackerrank",
       name: "HackerRank",
-      icon: "🏅",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/hackerrank.svg",
       placeholder: "hackerrank username",
     },
     {
       key: "codeforces",
       name: "Codeforces",
-      icon: "⚔️",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/codeforces.svg",
       placeholder: "codeforces username",
     },
     {
       key: "leetcode",
       name: "LeetCode",
-      icon: "🧩",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/leetcode.svg",
       placeholder: "leetcode username",
     },
     {
       key: "topcoder",
       name: "TopCoder",
-      icon: "🏁",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/topcoder.svg",
       placeholder: "topcoder username",
     },
     {
       key: "hackerearth",
       name: "HackerEarth",
-      icon: "🌍",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/hackerearth.svg",
       placeholder: "hackerearth user (with @)",
     },
     {
       key: "gfg",
       name: "GeeksforGeeks",
-      icon: "🤓",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/geeksforgeeks.svg",
       placeholder: "GFG (<username>/profile)",
     },
     {
       key: "discord",
       name: "Discord",
-      icon: "💬",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.0.1/icons/discord.svg",
       placeholder: "discord invite (only code)",
     },
-    { key: "rss", name: "RSS", icon: "📡", placeholder: "RSS feed URL" },
+    {
+      key: "rss",
+      name: "RSS",
+      icon: "https://cdn.jsdelivr.net/npm/simple-icons@3.1.0/icons/rss.svg",
+      placeholder: "RSS feed URL",
+    },
   ];
 
   if (currentStep === "output") {
@@ -927,7 +932,12 @@ export default function GitHubReadmeGenerator() {
                 {socialPlatforms.slice(0, 12).map((platform) => (
                   <div key={platform.key} className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
-                      <span className="text-lg">{platform.icon}</span>
+                      <img
+                        src={platform.icon}
+                        alt={platform.name}
+                        className="w-6 h-6 object-contain"
+                        loading="lazy"
+                      />
                     </div>
                     <Input
                       placeholder={platform.placeholder}
@@ -947,7 +957,12 @@ export default function GitHubReadmeGenerator() {
                 {socialPlatforms.slice(12).map((platform) => (
                   <div key={platform.key} className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
-                      <span className="text-lg">{platform.icon}</span>
+                      <img
+                        src={platform.icon}
+                        alt={platform.name}
+                        className="w-6 h-6 object-contain"
+                        loading="lazy"
+                      />
                     </div>
                     <Input
                       placeholder={platform.placeholder}
@@ -1015,137 +1030,47 @@ export default function GitHubReadmeGenerator() {
                 </h2>
                 <p className="text-lg text-gray-600 mb-2">
                   Select from over 60 core languages, frameworks, backend
-                  technologies and web
+                  technologies and web3 technologies to showcase your expertise.
                 </p>
-                <p className="text-lg text-gray-600">3 tech.</p>
               </div>
               <div className="flex-1 flex justify-end">
                 <div className="grid grid-cols-5 gap-4">
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="C Programming"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="HTML5"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="JavaScript"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Tailwind CSS"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="TypeScript"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="PHP"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Vue.js"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="MongoDB"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Figma"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="React"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Angular"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Flutter"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Python"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Babel"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Python"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Kotlin"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Flutter"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Express"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="GitHub"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="GraphQL"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Bootstrap"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Swift"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Kubernetes"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Sass"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Sass"
-                    className="w-12 h-12"
-                  />
+                  {[
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/c-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/html5-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/javascript-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/tailwindcss-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/typescript-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/php-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/vuejs-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/mongodb-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/figma-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/react-colored.svg",
+                    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/flutter-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/python-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/babel-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/kotlin-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/express-colored.svg",
+                    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/graphql-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/bootstrap-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/swift-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/kubernetes-colored.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/skills/sass-colored.svg",
+                  ].map((src, index) => (
+                    <div
+                      key={index}
+                      className="transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg rounded-full p-1"
+                    >
+                      <img
+                        src={src}
+                        alt="Skill"
+                        className="w-12 h-12 object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1156,51 +1081,29 @@ export default function GitHubReadmeGenerator() {
             <div className="flex items-center justify-between">
               <div className="flex-1 flex justify-start">
                 <div className="grid grid-cols-3 gap-4">
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="GitHub"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Facebook"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Instagram"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Discord"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="YouTube"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Dribbble"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Twitter"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Medium"
-                    className="w-12 h-12"
-                  />
-                  <img
-                    src="/placeholder.svg?height=48&width=48"
-                    alt="Threads"
-                    className="w-12 h-12"
-                  />
+                  {[
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/github.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/facebook.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/instagram.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/discord.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/youtube.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/dribbble.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/twitter.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/medium.svg",
+                    "https://raw.githubusercontent.com/danielcranney/readme-generator/main/public/icons/socials/threads.svg",
+                  ].map((src, index) => (
+                    <div
+                      key={index}
+                      className="transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg rounded-full p-1"
+                    >
+                      <img
+                        src={src}
+                        alt="Social"
+                        className="w-12 h-12 object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="flex-1 text-right">
@@ -1300,79 +1203,6 @@ export default function GitHubReadmeGenerator() {
                     You can change the colors, fonts, sizes, styles, layouts,
                     etc. that reflects your personality and style.
                   </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* How to Create Profile Section */}
-          <div className="bg-white border rounded-lg p-8">
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  How to Create Profile Readme Generator
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  Creating a GitHub profile readme with GitHub Profile Generator
-                  is very simple and straightforward. You just need to follow
-                  these steps:
-                </p>
-                <ol className="list-decimal list-inside space-y-2 text-gray-600">
-                  <li>Go to the GitHub Profile Generator website.</li>
-                  <li>
-                    Fill out the form with your information. You can use the
-                    placeholders as examples.
-                  </li>
-                  <li>Click on the "Generate Readme" button.</li>
-                  <li>
-                    Preview the generated markdown code and see how it looks
-                    like on your GitHub profile.
-                  </li>
-                  <li>
-                    Copy the code and paste it into your GitHub profile
-                    repository.
-                  </li>
-                  <li>Enjoy your new and improved GitHub profile readme.</li>
-                </ol>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  A Github profile sample code
-                </h2>
-                <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-                  <p>Hi, I'm Alice 👋</p>
-                  <p>
-                    I'm a web developer and designer who loves creating
-                    beautiful and functional websites. I have a passion for
-                    learning new technologies and exploring new ideas.
-                  </p>
-                  <p>🌍 I'm from Beijing, China</p>
-                  <p>📧 You can reach me at alice@example.com</p>
-                  <p>🔧 I use these technologies:</p>
-                  <ul className="list-disc list-inside ml-4">
-                    <li>HTML</li>
-                    <li>CSS</li>
-                    <li>JavaScript</li>
-                    <li>React</li>
-                    <li>TailwindCSS</li>
-                    <li>Node.js</li>
-                    <li>MongoDB</li>
-                  </ul>
-                  <p>💼 I'm working on these projects:</p>
-                  <ul className="list-disc list-inside ml-4">
-                    <li>
-                      Portfolio - A personal portfolio website to showcase my
-                      skills and projects.
-                    </li>
-                    <li>
-                      Todo App - A simple and elegant todo app with React and
-                      TailwindCSS.
-                    </li>
-                    <li>
-                      Blog - A blog where I share my thoughts and experiences on
-                      web development and design.
-                    </li>
-                  </ul>
                 </div>
               </div>
             </div>
