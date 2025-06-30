@@ -1,14 +1,46 @@
 "use client";
 
-import { useState, useCallback, useMemo, memo } from "react";
+import type React from "react";
+
+import { useState, useCallback, useMemo, memo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, ArrowLeft, Copy, Download, Eye } from "lucide-react";
 import { skillCategories, skillIcons, type Skill } from "@/data/skills";
 import Navbar from "@/components/navbar";
+
+// Debounce hook for better performance
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useState(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  });
+
+  return debouncedValue;
+}
 
 // Memoized skill item component for better performance
 const SkillItem = memo(
@@ -23,25 +55,25 @@ const SkillItem = memo(
   }) => {
     const iconUrl = skillIcons[skill.key as keyof typeof skillIcons];
 
+    const handleClick = useCallback(() => {
+      onToggle(skill.key);
+    }, [onToggle, skill.key]);
+
     return (
       <div className="flex items-center gap-3">
         <Checkbox
           id={skill.key}
           checked={isSelected}
-          onCheckedChange={() => onToggle(skill.key)}
+          onCheckedChange={handleClick}
           className="w-4 h-4"
         />
-        <div
-          className="relative group cursor-pointer"
-          onClick={() => onToggle(skill.key)}
-        >
+        <div className="relative group cursor-pointer" onClick={handleClick}>
           <img
             src={iconUrl || "/placeholder.svg"}
             alt={skill.name}
             className="w-12 h-12 object-contain hover:scale-125 transition-transform duration-300"
             loading="lazy"
           />
-          {/* Fixed Tooltip - Only shows one skill name */}
           <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30">
             {skill.name}
           </div>
@@ -52,6 +84,39 @@ const SkillItem = memo(
 );
 
 SkillItem.displayName = "SkillItem";
+
+// Memoized input component to prevent unnecessary re-renders
+const OptimizedInput = memo(
+  ({
+    placeholder,
+    value,
+    onChange,
+    className,
+  }: {
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    className?: string;
+  }) => {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+      },
+      [onChange]
+    );
+
+    return (
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChange={handleChange}
+        className={className}
+      />
+    );
+  }
+);
+
+OptimizedInput.displayName = "OptimizedInput";
 
 export default function GitHubReadmeGenerator() {
   const [currentStep, setCurrentStep] = useState("form");
@@ -98,6 +163,8 @@ export default function GitHubReadmeGenerator() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [addonErrors, setAddonErrors] = useState<string[]>([]);
+  const [statsTheme, setStatsTheme] = useState("default");
+
   const [socialLinks, setSocialLinks] = useState({
     github: "",
     twitter: "",
@@ -126,15 +193,20 @@ export default function GitHubReadmeGenerator() {
   });
 
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
 
-  // Optimized input handlers with debouncing
-  const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  // Optimized input handlers
+  const handleInputChange = useCallback((field: string) => {
+    return (value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    };
   }, []);
 
-  const handleWorkLabelChange = useCallback((field: string, value: string) => {
-    setWorkLabels((prev) => ({ ...prev, [field]: value }));
+  const handleWorkLabelChange = useCallback((field: string) => {
+    return (value: string) => {
+      setWorkLabels((prev) => ({ ...prev, [field]: value }));
+    };
   }, []);
 
   const handleSkillToggle = useCallback((skillKey: string) => {
@@ -182,9 +254,13 @@ export default function GitHubReadmeGenerator() {
     [socialLinks.twitter, socialLinks.devto, socialLinks.medium]
   );
 
-  const handleSocialChange = useCallback((platform: string, value: string) => {
-    setSocialLinks((prev) => ({ ...prev, [platform]: value }));
-    setAddonErrors((prev) => prev.filter((error) => !error.includes(platform)));
+  const handleSocialChange = useCallback((platform: string) => {
+    return (value: string) => {
+      setSocialLinks((prev) => ({ ...prev, [platform]: value }));
+      setAddonErrors((prev) =>
+        prev.filter((error) => !error.includes(platform))
+      );
+    };
   }, []);
 
   const copyToClipboard = useCallback(async () => {
@@ -217,54 +293,83 @@ export default function GitHubReadmeGenerator() {
     let markdown = `<h1 align="center">Hi 👋, I'm ${formData.name}</h1>\n`;
     markdown += `<h3 align="center">${formData.subtitle}</h3>\n\n`;
 
+    // Add work sections
     if (formData.currentProject) {
       markdown += `${workLabels.currentWork} **${formData.currentProject}**\n\n`;
     }
-
     if (formData.collaborationProject) {
       markdown += `${workLabels.collaboration} **${formData.collaborationProject}**\n\n`;
     }
-
     if (formData.helpProject) {
       markdown += `${workLabels.helpWith} **${formData.helpProject}**\n\n`;
     }
-
     if (formData.learningDetails) {
       markdown += `${workLabels.learning} **${formData.learningDetails}**\n\n`;
     }
-
     if (formData.askDetails) {
       markdown += `${workLabels.askAbout} **${formData.askDetails}**\n\n`;
     }
-
     if (formData.reachDetails) {
       markdown += `${workLabels.reachMe} **${formData.reachDetails}**\n\n`;
     }
-
     if (formData.portfolioLink) {
       markdown += `${workLabels.portfolio} [${formData.portfolioLink}](${formData.portfolioLink})\n\n`;
     }
-
     if (formData.blogLink) {
       markdown += `${workLabels.blog} [${formData.blogLink}](${formData.blogLink})\n\n`;
     }
-
     if (formData.resumeLink) {
       markdown += `${workLabels.resume} [${formData.resumeLink}](${formData.resumeLink})\n\n`;
     }
-
     if (formData.funFact) {
       markdown += `${workLabels.funFact} **${formData.funFact}**\n\n`;
     }
 
     // Add social links
-    markdown += `<h3 align="left">Connect with me:</h3>\n<p align="left">\n`;
-    Object.entries(socialLinks).forEach(([platform, username]) => {
-      if (username) {
-        markdown += `<a href="https://${platform}.com/${username}" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/${platform}.svg" alt="${username}" height="30" width="40" /></a>\n`;
-      }
-    });
-    markdown += `</p>\n\n`;
+    if (Object.values(socialLinks).some((link) => link)) {
+      markdown += `<h3 align="left">Connect with me:</h3>\n<p align="left">\n`;
+      Object.entries(socialLinks).forEach(([platform, username]) => {
+        if (username) {
+          let url = "";
+          switch (platform) {
+            case "github":
+              url = `https://github.com/${username}`;
+              break;
+            case "twitter":
+              url = `https://twitter.com/${username}`;
+              break;
+            case "linkedin":
+              url = `https://linkedin.com/in/${username}`;
+              break;
+            case "stackoverflow":
+              url = `https://stackoverflow.com/users/${username}`;
+              break;
+            case "medium":
+              url = `https://medium.com/${username}`;
+              break;
+            case "devto":
+              url = `https://dev.to/${username}`;
+              break;
+            case "hashnode":
+              url = `https://hashnode.com/${username}`;
+              break;
+            case "youtube":
+              url = `https://youtube.com/c/${username}`;
+              break;
+            case "discord":
+              url = `https://discord.gg/${username}`;
+              break;
+            case "rss":
+              url = username;
+              break;
+            default:
+              url = `https://${platform}.com/${username}`;
+          }
+          markdown += `<a href="${url}" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/${platform}.svg" alt="${username}" height="30" width="40" /></a>\n`;
+        }
+      });
+      markdown += `</p>\n\n`;
+    }
 
     // Add skills
     if (selectedSkills.length > 0) {
@@ -278,38 +383,172 @@ export default function GitHubReadmeGenerator() {
       markdown += `</p>\n\n`;
     }
 
+    // Add GitHub stats and addons
+    if (selectedAddons.length > 0 && socialLinks.github) {
+      const username = socialLinks.github;
+
+      // GitHub Trophy
+      if (selectedAddons.includes("display github trophy")) {
+        markdown += `<p align="left"> <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=${username}&theme=${statsTheme}" alt="${username}" /></a> </p>\n\n`;
+      }
+
+      // Visitor count badge
+      if (selectedAddons.includes("display visitors count badge 👁️")) {
+        markdown += `<p align="left"> <img src="https://komarev.com/ghpvc/?username=${username}&label=Profile%20views&color=0e75b6&style=flat" alt="${username}" /> </p>\n\n`;
+      }
+
+      // GitHub stats card
+      if (selectedAddons.includes("display github profile stats card 📊")) {
+        markdown += `<p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&locale=en&theme=${statsTheme}" alt="${username}" /></p>\n\n`;
+      }
+
+      // Top languages
+      if (
+        selectedAddons.includes("display top skills 📊") ||
+        selectedAddons.includes("display most used languages")
+      ) {
+        markdown += `<p><img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=${username}&show_icons=true&locale=en&layout=compact&theme=${statsTheme}" alt="${username}" /></p>\n\n`;
+      }
+
+      // GitHub streak stats
+      if (selectedAddons.includes("display github streak stats 🔥")) {
+        markdown += `<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=${username}&theme=${statsTheme}" alt="${username}" /></p>\n\n`;
+      }
+
+      // Contribution stats
+      if (selectedAddons.includes("display contribution stats")) {
+        markdown += `<p><img align="center" src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&count_private=true&theme=${statsTheme}" alt="${username}" /></p>\n\n`;
+      }
+
+      // Twitter badge
+      if (
+        selectedAddons.includes("display twitter badge") &&
+        socialLinks.twitter
+      ) {
+        markdown += `<p align="left"> <a href="https://twitter.com/${socialLinks.twitter}" target="blank"><img src="https://img.shields.io/twitter/follow/${socialLinks.twitter}?logo=twitter&style=for-the-badge" alt="${socialLinks.twitter}" /></a> </p>\n\n`;
+      }
+
+      // Dev.to blogs
+      if (
+        selectedAddons.includes(
+          "display latest dev.to blogs dynamically (GitHub Action)"
+        ) &&
+        socialLinks.devto
+      ) {
+        markdown += `### Blogs posts\n<!-- BLOG-POST-LIST:START -->\n<!-- BLOG-POST-LIST:END -->\n\n`;
+      }
+
+      // Medium blogs
+      if (
+        selectedAddons.includes(
+          "display latest medium blogs dynamically (GitHub Action)"
+        ) &&
+        socialLinks.medium
+      ) {
+        markdown += `### Medium posts\n<!-- MEDIUM-POST-LIST:START -->\n<!-- MEDIUM-POST-LIST:END -->\n\n`;
+      }
+    }
+
     setGeneratedMarkdown(markdown);
     setCurrentStep("output");
-  }, [formData, workLabels, socialLinks, selectedSkills]);
+  }, [
+    formData,
+    workLabels,
+    socialLinks,
+    selectedSkills,
+    selectedAddons,
+    statsTheme,
+  ]);
 
   // Memoized filtered skills for search performance
   const filteredSkillCategories = useMemo(() => {
-    if (!searchTerm) return skillCategories;
+    if (!debouncedSearchTerm) return skillCategories;
 
     const filtered: typeof skillCategories = {} as typeof skillCategories;
-
     Object.entries(skillCategories).forEach(([categoryKey, skills]) => {
       const filteredSkills = skills.filter((skill) =>
-        skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+        skill.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
       if (filteredSkills.length > 0) {
         filtered[categoryKey as keyof typeof skillCategories] = filteredSkills;
       }
     });
-
     return filtered;
-  }, [searchTerm, skillCategories]);
+  }, [debouncedSearchTerm]);
 
   const addons = [
     "display visitors count badge 👁️",
     "display github trophy",
     "display github profile stats card 📊",
     "display top skills 📊",
+    "display most used languages",
     "display github streak stats 🔥",
+    "display contribution stats",
     "display twitter badge",
     "display latest dev.to blogs dynamically (GitHub Action)",
     "display latest medium blogs dynamically (GitHub Action)",
     "display latest blogs from your personal blog dynamically (GitHub Action)",
+  ];
+
+  const themes = [
+    { value: "default", label: "Default" },
+    { value: "dark", label: "Dark" },
+    { value: "radical", label: "Radical" },
+    { value: "merko", label: "Merko" },
+    { value: "gruvbox", label: "Gruvbox" },
+    { value: "tokyonight", label: "Tokyo Night" },
+    { value: "onedark", label: "One Dark" },
+    { value: "cobalt", label: "Cobalt" },
+    { value: "synthwave", label: "Synthwave" },
+    { value: "highcontrast", label: "High Contrast" },
+    { value: "dracula", label: "Dracula" },
+    { value: "prussian", label: "Prussian" },
+    { value: "monokai", label: "Monokai" },
+    { value: "vue", label: "Vue" },
+    { value: "vue-dark", label: "Vue Dark" },
+    { value: "shades-of-purple", label: "Shades of Purple" },
+    { value: "nightowl", label: "Night Owl" },
+    { value: "buefy", label: "Buefy" },
+    { value: "blue-green", label: "Blue Green" },
+    { value: "algolia", label: "Algolia" },
+    { value: "great-gatsby", label: "Great Gatsby" },
+    { value: "darcula", label: "Darcula" },
+    { value: "bear", label: "Bear" },
+    { value: "solarized-dark", label: "Solarized Dark" },
+    { value: "solarized-light", label: "Solarized Light" },
+    { value: "chartreuse-dark", label: "Chartreuse Dark" },
+    { value: "nord", label: "Nord" },
+    { value: "gotham", label: "Gotham" },
+    { value: "material-palenight", label: "Material Palenight" },
+    { value: "graywhite", label: "Gray White" },
+    { value: "vision-friendly-dark", label: "Vision Friendly Dark" },
+    { value: "ayu-mirage", label: "Ayu Mirage" },
+    { value: "midnight-purple", label: "Midnight Purple" },
+    { value: "calm", label: "Calm" },
+    { value: "flag-india", label: "Flag India" },
+    { value: "omni", label: "Omni" },
+    { value: "react", label: "React" },
+    { value: "jolly", label: "Jolly" },
+    { value: "maroongold", label: "Maroon Gold" },
+    { value: "yeblu", label: "Yeblu" },
+    { value: "blueberry", label: "Blueberry" },
+    { value: "slateorange", label: "Slate Orange" },
+    { value: "kacho_ga", label: "Kacho Ga" },
+    { value: "outrun", label: "Outrun" },
+    { value: "ocean_dark", label: "Ocean Dark" },
+    { value: "city_lights", label: "City Lights" },
+    { value: "github_dark", label: "GitHub Dark" },
+    { value: "discord_old_blurple", label: "Discord Old Blurple" },
+    { value: "aura_dark", label: "Aura Dark" },
+    { value: "panda", label: "Panda" },
+    { value: "noctis_minimus", label: "Noctis Minimus" },
+    { value: "cobalt2", label: "Cobalt2" },
+    { value: "swift", label: "Swift" },
+    { value: "aura", label: "Aura" },
+    { value: "apprentice", label: "Apprentice" },
+    { value: "moltack", label: "Moltack" },
+    { value: "codeSTACKr", label: "CodeSTACKr" },
+    { value: "rose_pine", label: "Rose Pine" },
   ];
 
   const SkillSection = memo(
@@ -526,7 +765,6 @@ export default function GitHubReadmeGenerator() {
                 preview
               </Button>
             </div>
-
             <div className="p-6">
               <Textarea
                 value={generatedMarkdown}
@@ -563,6 +801,7 @@ export default function GitHubReadmeGenerator() {
       <div className="container mx-auto px-8 py-10 max-w-7xl relative z-10">
         {/* Header */}
         <Navbar />
+
         <div className="text-center mb-16 pt-8">
           <div className="relative inline-block">
             {/* Main Heading with Premium Styling */}
@@ -639,234 +878,188 @@ export default function GitHubReadmeGenerator() {
             <div className="space-y-8">
               <div className="flex items-center gap-6">
                 <span className="text-lg">Hi 👋, I'm</span>
-                <Input
+                <OptimizedInput
                   placeholder="name"
                   value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  onChange={handleInputChange("name")}
                   className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-lg py-3 px-0"
                 />
               </div>
 
               <h3 className="text-xl font-semibold mt-12">Subtitle</h3>
-              <Input
+              <OptimizedInput
                 placeholder="A passionate frontend developer from India"
                 value={formData.subtitle}
-                onChange={(e) => handleInputChange("subtitle", e.target.value)}
+                onChange={handleInputChange("subtitle")}
                 className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-lg py-3 px-0"
               />
 
               <h3 className="text-xl font-semibold mt-12">Work</h3>
               <div className="space-y-6">
                 <div className="grid grid-cols-3 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="🔭 I'm currently working on"
                     value={workLabels.currentWork}
-                    onChange={(e) =>
-                      handleWorkLabelChange("currentWork", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("currentWork")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project name"
                     value={formData.currentProject}
-                    onChange={(e) =>
-                      handleInputChange("currentProject", e.target.value)
-                    }
+                    onChange={handleInputChange("currentProject")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project link"
                     value={formData.currentProjectLink}
-                    onChange={(e) =>
-                      handleInputChange("currentProjectLink", e.target.value)
-                    }
+                    onChange={handleInputChange("currentProjectLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="👯 I'm looking to collaborate on"
                     value={workLabels.collaboration}
-                    onChange={(e) =>
-                      handleWorkLabelChange("collaboration", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("collaboration")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project name"
                     value={formData.collaborationProject}
-                    onChange={(e) =>
-                      handleInputChange("collaborationProject", e.target.value)
-                    }
+                    onChange={handleInputChange("collaborationProject")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project link"
                     value={formData.collaborationLink}
-                    onChange={(e) =>
-                      handleInputChange("collaborationLink", e.target.value)
-                    }
+                    onChange={handleInputChange("collaborationLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="🤝 I'm looking for help with"
                     value={workLabels.helpWith}
-                    onChange={(e) =>
-                      handleWorkLabelChange("helpWith", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("helpWith")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project name"
                     value={formData.helpProject}
-                    onChange={(e) =>
-                      handleInputChange("helpProject", e.target.value)
-                    }
+                    onChange={handleInputChange("helpProject")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="project link"
                     value={formData.helpLink}
-                    onChange={(e) =>
-                      handleInputChange("helpLink", e.target.value)
-                    }
+                    onChange={handleInputChange("helpLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="🌱 I'm currently learning"
                     value={workLabels.learning}
-                    onChange={(e) =>
-                      handleWorkLabelChange("learning", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("learning")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="Frameworks, courses etc."
                     value={formData.learningDetails}
-                    onChange={(e) =>
-                      handleInputChange("learningDetails", e.target.value)
-                    }
+                    onChange={handleInputChange("learningDetails")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="💬 Ask me about"
                     value={workLabels.askAbout}
-                    onChange={(e) =>
-                      handleWorkLabelChange("askAbout", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("askAbout")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="react, vue and gsap"
                     value={formData.askDetails}
-                    onChange={(e) =>
-                      handleInputChange("askDetails", e.target.value)
-                    }
+                    onChange={handleInputChange("askDetails")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="📫 How to reach me"
                     value={workLabels.reachMe}
-                    onChange={(e) =>
-                      handleWorkLabelChange("reachMe", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("reachMe")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="example@gmail.com"
                     value={formData.reachDetails}
-                    onChange={(e) =>
-                      handleInputChange("reachDetails", e.target.value)
-                    }
+                    onChange={handleInputChange("reachDetails")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="👨‍💻 All of my projects are available at"
                     value={workLabels.portfolio}
-                    onChange={(e) =>
-                      handleWorkLabelChange("portfolio", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("portfolio")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="portfolio link"
                     value={formData.portfolioLink}
-                    onChange={(e) =>
-                      handleInputChange("portfolioLink", e.target.value)
-                    }
+                    onChange={handleInputChange("portfolioLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="📝 I regularly write articles on"
                     value={workLabels.blog}
-                    onChange={(e) =>
-                      handleWorkLabelChange("blog", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("blog")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="blog link"
                     value={formData.blogLink}
-                    onChange={(e) =>
-                      handleInputChange("blogLink", e.target.value)
-                    }
+                    onChange={handleInputChange("blogLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="📄 Know about my experiences"
                     value={workLabels.resume}
-                    onChange={(e) =>
-                      handleWorkLabelChange("resume", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("resume")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="resume link"
                     value={formData.resumeLink}
-                    onChange={(e) =>
-                      handleInputChange("resumeLink", e.target.value)
-                    }
+                    onChange={handleInputChange("resumeLink")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 items-center">
-                  <Input
+                  <OptimizedInput
                     placeholder="⚡ Fun fact"
                     value={workLabels.funFact}
-                    onChange={(e) =>
-                      handleWorkLabelChange("funFact", e.target.value)
-                    }
+                    onChange={handleWorkLabelChange("funFact")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full font-medium"
                   />
-                  <Input
+                  <OptimizedInput
                     placeholder="I think I am funny"
                     value={formData.funFact}
-                    onChange={(e) =>
-                      handleInputChange("funFact", e.target.value)
-                    }
+                    onChange={handleInputChange("funFact")}
                     className="border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                   />
                 </div>
@@ -888,6 +1081,7 @@ export default function GitHubReadmeGenerator() {
                 />
               </div>
             </div>
+
             <div className="space-y-10">
               {Object.entries(filteredSkillCategories).map(
                 ([categoryKey, skills]) => {
@@ -933,45 +1127,40 @@ export default function GitHubReadmeGenerator() {
                   <div key={platform.key} className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
                       <img
-                        src={platform.icon}
+                        src={platform.icon || "/placeholder.svg"}
                         alt={platform.name}
                         className="w-6 h-6 object-contain"
                         loading="lazy"
                       />
                     </div>
-                    <Input
+                    <OptimizedInput
                       placeholder={platform.placeholder}
                       value={
                         socialLinks[platform.key as keyof typeof socialLinks]
                       }
-                      onChange={(e) =>
-                        handleSocialChange(platform.key, e.target.value)
-                      }
+                      onChange={handleSocialChange(platform.key)}
                       className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                     />
                   </div>
                 ))}
               </div>
-
               <div className="space-y-6">
                 {socialPlatforms.slice(12).map((platform) => (
                   <div key={platform.key} className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gray-100 border border-gray-300 rounded flex items-center justify-center hover:scale-110 transition-transform duration-300 cursor-pointer">
                       <img
-                        src={platform.icon}
+                        src={platform.icon || "/placeholder.svg"}
                         alt={platform.name}
                         className="w-6 h-6 object-contain"
                         loading="lazy"
                       />
                     </div>
-                    <Input
+                    <OptimizedInput
                       placeholder={platform.placeholder}
                       value={
                         socialLinks[platform.key as keyof typeof socialLinks]
                       }
-                      onChange={(e) =>
-                        handleSocialChange(platform.key, e.target.value)
-                      }
+                      onChange={handleSocialChange(platform.key)}
                       className="flex-1 border-b-2 border-gray-300 border-t-0 border-l-0 border-r-0 rounded-none text-base py-3 px-0 w-full"
                     />
                   </div>
@@ -983,6 +1172,26 @@ export default function GitHubReadmeGenerator() {
           {/* Add-ons Section */}
           <div className="bg-white border rounded-lg p-8">
             <h2 className="text-2xl font-semibold mb-8">Add-ons</h2>
+
+            {/* Theme Selection */}
+            <div className="mb-8">
+              <Label className="text-base font-medium mb-4 block">
+                Choose Theme for Stats (GitHub Trophy, Stats Cards, etc.)
+              </Label>
+              <Select value={statsTheme} onValueChange={setStatsTheme}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Select theme" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {themes.map((theme) => (
+                    <SelectItem key={theme.value} value={theme.value}>
+                      {theme.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-6">
               {addons.map((addon) => (
                 <div key={addon} className="space-y-2">
@@ -1064,7 +1273,7 @@ export default function GitHubReadmeGenerator() {
                       className="transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg rounded-full p-1"
                     >
                       <img
-                        src={src}
+                        src={src || "/placeholder.svg"}
                         alt="Skill"
                         className="w-12 h-12 object-contain"
                         loading="lazy"
@@ -1097,7 +1306,7 @@ export default function GitHubReadmeGenerator() {
                       className="transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-lg rounded-full p-1"
                     >
                       <img
-                        src={src}
+                        src={src || "/placeholder.svg"}
                         alt="Social"
                         className="w-12 h-12 object-contain"
                         loading="lazy"
@@ -1125,8 +1334,9 @@ export default function GitHubReadmeGenerator() {
                   Add some stats
                 </h2>
                 <p className="text-lg text-gray-600">
-                  Show visitors some key facts through charts, graphs and
-                  badges.
+                  Show visitors some key facts through charts, graphs and badges
+                  including GitHub trophies, contribution stats, streak
+                  counters, and most used languages.
                 </p>
               </div>
               <div className="flex-1 flex justify-end">
@@ -1144,10 +1354,11 @@ export default function GitHubReadmeGenerator() {
                     <div className="w-40 h-4 bg-gray-300 rounded"></div>
                   </div>
                   <div className="flex justify-end mt-8">
-                    <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                      230
-                      <br />
-                      DAYS
+                    <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-center">
+                      <div>
+                        <div className="text-lg">230</div>
+                        <div className="text-xs">DAYS</div>
+                      </div>
                     </div>
                   </div>
                 </div>

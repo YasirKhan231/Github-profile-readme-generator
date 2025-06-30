@@ -151,7 +151,7 @@ export const skillIcons = {
   // Software
   illustrator: "https://www.vectorlogo.zone/logos/adobe_illustrator/adobe_illustrator-icon.svg",
   photoshop: "https://raw.githubusercontent.com/devicons/devicon/master/icons/photoshop/photoshop-line.svg",
-  xd: "https://cdn.worldvectorlogo.com/logos/adobe-xd.svg",
+  xd: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/adobe-xd-icon.png",
   figma: "https://www.vectorlogo.zone/logos/figma/figma-icon.svg",
   blender: "https://download.blender.org/branding/community/blender_community_badge_white.svg",
   sketch: "https://www.vectorlogo.zone/logos/sketchapp/sketchapp-icon.svg",
@@ -222,9 +222,9 @@ export const skillIcons = {
 
   // Data Analysis
   sql: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/mysql.svg",
-  excel: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/microsoftexcel.svg",
+  excel: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcHKpK-kJhBO05F2EBvZCxyuxj6bvNJtySmVh9EeDXHc9wnnUR57zoSHU&usqp=CAE&s",
   r: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/r.svg",
-  tableau: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/tableau.svg",
+  tableau: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQq4w-5Togs-xXfcpVvJDYMwW75xT1FewSN3KNdp3INj5gA_e8Oymw4Fo&usqp=CAE&s",
   powerbi: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/powerbi.svg",
   jupyter: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/jupyter.svg",
   numpy: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/numpy.svg",
