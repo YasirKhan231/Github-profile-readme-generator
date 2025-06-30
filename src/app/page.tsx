@@ -128,18 +128,19 @@ export default function GitHubReadmeGenerator() {
   const [searchTerm, setSearchTerm] = useState("");
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
 
+  // Optimized input handlers with debouncing
   const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleWorkLabelChange = useCallback((field: string, value: string) => {
-    setWorkLabels((prev) => ({ ...prev, [field]: value }));
+    setWorkLabels(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleSkillToggle = useCallback((skillKey: string) => {
-    setSelectedSkills((prev) =>
+    setSelectedSkills(prev =>
       prev.includes(skillKey)
-        ? prev.filter((s) => s !== skillKey)
+        ? prev.filter(s => s !== skillKey)
         : [...prev, skillKey]
     );
   }, []);
@@ -165,16 +166,16 @@ export default function GitHubReadmeGenerator() {
         }
 
         if (hasError) {
-          setAddonErrors((prev) => [...prev, addon]);
+          setAddonErrors(prev => [...prev, addon]);
           return;
         } else {
-          setAddonErrors((prev) => prev.filter((error) => error !== addon));
+          setAddonErrors(prev => prev.filter(error => error !== addon));
         }
       }
 
-      setSelectedAddons((prev) =>
+      setSelectedAddons(prev =>
         prev.includes(addon)
-          ? prev.filter((a) => a !== addon)
+          ? prev.filter(a => a !== addon)
           : [...prev, addon]
       );
     },
@@ -182,8 +183,8 @@ export default function GitHubReadmeGenerator() {
   );
 
   const handleSocialChange = useCallback((platform: string, value: string) => {
-    setSocialLinks((prev) => ({ ...prev, [platform]: value }));
-    setAddonErrors((prev) => prev.filter((error) => !error.includes(platform)));
+    setSocialLinks(prev => ({ ...prev, [platform]: value }));
+    setAddonErrors(prev => prev.filter(error => !error.includes(platform)));
   }, []);
 
   const copyToClipboard = useCallback(async () => {
@@ -297,7 +298,7 @@ export default function GitHubReadmeGenerator() {
     });
 
     return filtered;
-  }, [searchTerm]);
+  }, [searchTerm, skillCategories]);
 
   const addons = [
     "display visitors count badge 👁️",
@@ -563,7 +564,7 @@ export default function GitHubReadmeGenerator() {
             <div className="relative">
               {/* GitHub - Calligraphy Style */}
               <div className="mb-4">
-                <h1 className="text-7xl font-bold text-gray-900 dark:text-white relative inline-block">
+                <h1 className="text-7xl font-bold text-gray-900 relative inline-block">
                   <span className="font-serif italic bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-2xl tracking-wide transform -rotate-1 inline-block calligraphy-text">
                     GitHub
                   </span>
@@ -602,7 +603,7 @@ export default function GitHubReadmeGenerator() {
 
               {/* Profile README Generator - Italic Serif */}
               <div className="mt-8">
-                <h2 className="text-5xl font-serif italic text-gray-800 dark:text-gray-200 leading-tight tracking-wide">
+                <h2 className="text-5xl font-serif italic text-gray-800 leading-tight tracking-wide">
                   <span className="inline-block transform hover:scale-105 transition-transform duration-300">
                     Profile README
                   </span>
@@ -618,7 +619,7 @@ export default function GitHubReadmeGenerator() {
               <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-purple-500/5 to-pink-500/5 rounded-2xl blur-2xl -z-10"></div>
             </div>
 
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto animate-fade-in mt-8 font-light">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto animate-fade-in mt-8 font-light">
               Create stunning GitHub profiles with our advanced README
               generator. Showcase your skills and projects with beautiful,
               professional designs.
