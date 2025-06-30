@@ -88,7 +88,7 @@ export default function Navbar() {
                   BLOG
                 </Link>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/YasirKhan231"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2"
@@ -97,7 +97,7 @@ export default function Navbar() {
                   <span>GitHub</span>
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/yasir-khan-397989234/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-gray-200 transition-colors flex items-center space-x-2"
