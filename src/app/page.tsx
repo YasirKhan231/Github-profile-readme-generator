@@ -470,22 +470,28 @@ export default function GitHubReadmeGenerator() {
 
     // Add work sections
     if (formData.currentProject) {
-      markdown += `${workLabels.currentWork} **${formData.currentProject}**\n\n`;
+      markdown += `${workLabels.currentWork} [${formData.currentProject}](${
+        formData.currentProjectLink || "#"
+      })\n\n`;
     }
     if (formData.collaborationProject) {
-      markdown += `${workLabels.collaboration} **${formData.collaborationProject}**\n\n`;
+      markdown += `${workLabels.collaboration} [${
+        formData.collaborationProject
+      }](${formData.collaborationLink || "#"})\n\n`;
     }
     if (formData.helpProject) {
-      markdown += `${workLabels.helpWith} **${formData.helpProject}**\n\n`;
+      markdown += `${workLabels.helpWith} [${formData.helpProject}](${
+        formData.helpLink || "#"
+      })\n\n`;
     }
     if (formData.learningDetails) {
-      markdown += `${workLabels.learning} **${formData.learningDetails}**\n\n`;
+      markdown += `${workLabels.learning} ${formData.learningDetails}\n\n`;
     }
     if (formData.askDetails) {
-      markdown += `${workLabels.askAbout} **${formData.askDetails}**\n\n`;
+      markdown += `${workLabels.askAbout} ${formData.askDetails}\n\n`;
     }
     if (formData.reachDetails) {
-      markdown += `${workLabels.reachMe} **${formData.reachDetails}**\n\n`;
+      markdown += `${workLabels.reachMe} ${formData.reachDetails}\n\n`;
     }
     if (formData.portfolioLink) {
       markdown += `${workLabels.portfolio} [${formData.portfolioLink}](${formData.portfolioLink})\n\n`;
@@ -497,12 +503,56 @@ export default function GitHubReadmeGenerator() {
       markdown += `${workLabels.resume} [${formData.resumeLink}](${formData.resumeLink})\n\n`;
     }
     if (formData.funFact) {
-      markdown += `${workLabels.funFact} **${formData.funFact}**\n\n`;
+      markdown += `${workLabels.funFact} ${formData.funFact}\n\n`;
     }
 
     // Add social links
     if (Object.values(socialLinks).some((link) => link)) {
       markdown += `<h3 align="left">Connect with me:</h3>\n<p align="left">\n`;
+
+      const socialIcons = {
+        github:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/github.svg",
+        twitter:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/twitter.svg",
+        linkedin:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg",
+        facebook:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/facebook.svg",
+        instagram:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg",
+        youtube:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/youtube.svg",
+        leetcode:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/leet-code.svg",
+        codechef:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/codechef.svg",
+        codeforces:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/codeforces.svg",
+        gfg: "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/geeks-for-geeks.svg",
+        hackerrank:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/hackerrank.svg",
+        hackerearth:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/hackerearth.svg",
+        devto:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/devto.svg",
+        medium:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/medium.svg",
+        stackoverflow:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/stack-overflow.svg",
+        kaggle:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/kaggle.svg",
+        dribbble:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/dribbble.svg",
+        behance:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/behance.svg",
+        hashnode:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/hashnode.svg",
+        discord:
+          "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/discord.svg",
+        rss: "https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/rss.svg",
+      };
+
       Object.entries(socialLinks).forEach(([platform, username]) => {
         if (username) {
           let url = "";
@@ -537,10 +587,32 @@ export default function GitHubReadmeGenerator() {
             case "rss":
               url = username;
               break;
+            case "leetcode":
+              url = `https://leetcode.com/${username}`;
+              break;
+            case "codechef":
+              url = `https://www.codechef.com/users/${username}`;
+              break;
+            case "codeforces":
+              url = `https://codeforces.com/profile/${username}`;
+              break;
+            case "gfg":
+              url = `https://auth.geeksforgeeks.org/user/${username}`;
+              break;
+            case "hackerrank":
+              url = `https://www.hackerrank.com/${username}`;
+              break;
+            case "hackerearth":
+              url = `https://www.hackerearth.com/${username}`;
+              break;
             default:
               url = `https://${platform}.com/${username}`;
           }
-          markdown += `<a href="${url}" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/${platform}.svg" alt="${username}" height="30" width="40" /></a>\n`;
+
+          const iconUrl = socialIcons[platform as keyof typeof socialIcons];
+          if (iconUrl) {
+            markdown += `<a href="${url}" target="_blank"><img src="${iconUrl}" alt="${username}" height="30" width="40" /></a>\n`;
+          }
         }
       });
       markdown += `</p>\n\n`;
@@ -658,7 +730,6 @@ export default function GitHubReadmeGenerator() {
     ],
     []
   );
-
   const themes = useMemo(
     () => [
       { value: "default", label: "Default" },
@@ -722,6 +793,8 @@ export default function GitHubReadmeGenerator() {
     ],
     []
   );
+  // Rest of the component code remains the same...
+  // [Previous code continues...]
 
   if (currentStep === "output") {
     return (
@@ -1102,7 +1175,7 @@ export default function GitHubReadmeGenerator() {
                     <SkillSection
                       key={categoryKey}
                       title={categoryTitles[categoryKey] || categoryKey}
-                      skills={skills}
+                      skills={skills as Skill[]}
                       selectedSkills={selectedSkills}
                       onSkillToggle={handleSkillToggle}
                     />
