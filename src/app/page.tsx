@@ -826,20 +826,6 @@ export default function GitHubReadmeGenerator() {
                 <Download className="w-5 h-5" />
                 download markdown
               </Button>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 bg-transparent px-6 py-3 text-base"
-              >
-                <Download className="w-5 h-5" />
-                download backup
-              </Button>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 bg-transparent px-6 py-3 text-base"
-              >
-                <Eye className="w-5 h-5" />
-                preview
-              </Button>
             </div>
             <div className="p-6">
               <Textarea
