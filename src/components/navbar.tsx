@@ -38,7 +38,7 @@ export default function Navbar() {
               </Link>
               <div className="flex items-center space-x-4">
                 <a
-                  href="https://github.com"
+                  href="https://github.com/YasirKhan231"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-gray-200 transition-colors"
@@ -46,7 +46,7 @@ export default function Navbar() {
                   <Github className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/yasir-khan-397989234/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white hover:text-gray-200 transition-colors"
