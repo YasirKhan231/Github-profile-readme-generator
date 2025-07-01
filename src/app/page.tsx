@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ArrowLeft, Copy, Download, Eye } from "lucide-react";
+import { Search, ArrowLeft, Copy, Download } from "lucide-react";
 import { skillCategories, skillIcons, type Skill } from "@/data/skills";
 import { socialPlatforms } from "@/data/socialplateform";
 
