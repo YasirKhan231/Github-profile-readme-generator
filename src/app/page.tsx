@@ -1155,7 +1155,7 @@ export default function GitHubReadmeGenerator() {
                 <SelectTrigger className="w-64">
                   <SelectValue placeholder="Select theme" />
                 </SelectTrigger>
-                <SelectContent className="max-h-60">
+                <SelectContent className="max-h-60 bg-white">
                   {themes.map((theme) => (
                     <SelectItem
                       key={theme.value}
@@ -1290,14 +1290,14 @@ export default function GitHubReadmeGenerator() {
           <div className="bg-white border rounded-lg p-8">
             <div className="text-center mb-8">
               <h2 className="text-4xl font-bold text-gray-900 mb-8">
-                Awesome GitHub Profile Readme Generator
+                GitHub Profile Readme Generator
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    Fast Profile Generate
+                    Fast Profile Generate in Under 5 minute
                   </h3>
                   <p className="text-gray-600">
                     GitHub Profile Readme Generator is designed to be fast and
