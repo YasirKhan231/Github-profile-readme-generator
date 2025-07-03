@@ -1,13 +1,17 @@
 {
   "name": "github-profile-readme-generator",
+   "homepage": "https://YasirKhan231.github.io/Github-profile-readme-generator",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build && next export",
+  "start": "next start",
+  "lint": "next lint",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d out"
+}
+,
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",
     "@radix-ui/react-label": "^2.1.7",
@@ -29,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"
